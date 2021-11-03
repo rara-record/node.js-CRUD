@@ -83,28 +83,36 @@ app.delete('/delete', function(요청, 응답) {
    상세페이지 만들기
 
    detail/:id << url의 파라미터
-   요청.params.id 
+   요청.params.id << url의 파라미터
    어떤 사람이 detail/?? 으로 접속하면
    DB에서 {_id: ??}인 게시물을 찾음
-   찾은 결과를 detail.ejs로 보냄
+   찾은 결과를 detail.ejs로 보내주세용
 */ 
 app.get('/detail/:id', function(요청, 응답){
    db.collection('post').findOne({ _id : parseInt(요청.params.id) }, function(에러, 결과){
-     응답.render('detail.ejs', {data : 결과} )
+     응답.render('detail.ejs', { data : 결과 })
    })
  });
 
-/* 
-   GET요청을 처리하는 기계 제작하기 add.get()
-   - 누군가가 /pet으로 방문을 하면..
-   - pet관련된 안내문을 띄워주자
-*/ 
-
-app.get('/pet', function(요청, 응답) {
-   응답.send('펫 용품 쇼핑할 수 있는 페이지입니다.');
+/*
+   edit페이지
+   /edit/:id 로 라우팅하기
+   게시글마다 각각 다른 edit.esj내용이 필요함
+*/
+app.get('/edit/:id', function(요청, 응답) {
+   db.collection('post').findOne({ _id : parseInt(요청.params.id) }, function(에러, 결과) {
+      console.log(결과)
+      응답.render('edit.ejs', { post : 결과 }) // 찾은 결과를 edit.ejs로 보내주세용
+   })
 });
 
-/* '/'하나만 쓰면 홈페이지 */
+/* 
+   GET요청을 처리하는 기계 제작하기 add.get()
+   - 누군가가 /write로 방문을 하면..
+   - write관련된 안내문을 띄워주자
+*/ 
+
+/* '/'하나만 쓰면 홈페이지로 */
 app.get('/', function(요청, 응답) {
    응답.render('index.ejs')
 });
