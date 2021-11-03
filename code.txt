@@ -1,0 +1,65 @@
+
+터미널 
+nodemon server.js
+
+서버접속
+localhost:8080
+(8080포트로 들어가는법)
+(app).listen(서버띄울 포트번호, 띄운 후 실행할 코드)
+응답.sendFile : 보낼 파일 경로
+
+callback function : 함수안에 함수, 순차적으로 실행하고싶을때 쓴다.
+서버는 꼭 뭔가 응답을 해주어야한다.
+응답코드 200 성공
+	400 실패
+
+// 글번호를 자동으로 달아서 저장해주는 것
+auto increment --- 몽고db는 없음
+
+form태그 기능 개발 중 꼭 있어야하는 2개 속성 
+1. action 
+2. method="POST"(쓰기) or "GET"(읽기)
+
+// 데이터 연결하기
+database 연결
+db = client.db('todoapp'); 
+
+// 데이터 저장하기
+db.collection('post').insertOne({추가할자료})
+데이터저장시 꼭 id생성해서 저장 : 유니크한 아이디로 저장하자
+
+// 데이터꺼내기
+db.collection('post').find()
+db.collection('post').findOne()
+html말고 ejs는 views폴더에 저장
+
+// 데이터 수정하기 
+				쿼리문		수정값
+db.collection('counter').updateOne({요런이름자료를}, {요로케수정해주세요})
+
+node.js update함수
+--- 연산자 필요
+operator
+$set 변경
+$inc 증가
+$min 기존값보다 적을때만 변경
+$rename key값 이름 변경
+
+// 데이터 삭제하기
+1. method-override 라이브러리 이용 (node에서 쓸 수 있는)
+2. AJAX삭제요청하기
+
+AJAX는 뭘까
+JS로 서버랑 통신할 수 있게 도와주는 JS문법
+장점: 새로고침없이
+
+AJAX DELETE 요청 문법
+$.ajax({
+    method : 'DELETE', // delete요청할거에용
+    url : '/list', // 경로주소 
+    data : '123' // 데이터
+}).done(function(결과) {
+    요청 성공하면 여기에 있는거 실행해주세용
+});
+
+
