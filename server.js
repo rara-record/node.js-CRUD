@@ -4,8 +4,11 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(express.urlencoded({extended: true})) 
 const MongoClient = require('mongodb').MongoClient;
-app.set('view engine', 'ejs');
 app.use('/public', express.static('public'))
+const methodOverride = require('method-override')
+app.use(methodOverride('_method'))
+
+app.set('view engine', 'ejs');
 
 
 // DB접속하기
@@ -32,7 +35,7 @@ MongoClient.connect('mongodb+srv://tododb:ssd10237879**@cluster0.metjd.mongodb.n
    2. db에 counter라는 콜렉션에서 totalPost라는 총 게시물 갯수 숫자를 가져옴 (꺼내기)
    3. var 총게시물갯수 = 여기에 저장함
    4. collection에 자료 추가 ==> insertOne{저장할데이터
-   5. db데이터 수정(업데이트) => counter라는 콜렉션에 totalPost 항목 +1 해주기 
+   5. db데이터 수정(updateOne) => counter라는 콜렉션에 totalPost 항목 +1 해주기 
 */
 app.post('/add', function (요청, 응답) {
    db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과){
@@ -82,7 +85,8 @@ app.delete('/delete', function(요청, 응답) {
 /* 
    상세페이지 만들기
 
-   detail/:id << url의 파라미터
+   detail/:id(글번호) 
+   :id(글번호) << url의 파라미터
    요청.params.id << url의 파라미터
    어떤 사람이 detail/?? 으로 접속하면
    DB에서 {_id: ??}인 게시물을 찾음
@@ -96,13 +100,31 @@ app.get('/detail/:id', function(요청, 응답){
 
 /*
    edit페이지
-   /edit/:id 로 라우팅하기
+   /edit/:id(글번호)로 라우팅하기
    게시글마다 각각 다른 edit.esj내용이 필요함
 */
 app.get('/edit/:id', function(요청, 응답) {
    db.collection('post').findOne({ _id : parseInt(요청.params.id) }, function(에러, 결과) {
-      console.log(결과)
       응답.render('edit.ejs', { post : 결과 }) // 찾은 결과를 edit.ejs로 보내주세용
+   })
+});
+
+/*
+   edit페이지 수정하기 
+   
+   누군가 PUT요청을 하면~~
+   폼에서 전송한 id, 제목, 날짜로 db.collection('post')에서 게시물을 찾음.
+   db.collection에 업데이트함.
+   수정완료시 다른페이지로 이동하기
+
+   폼 전송시 _id : ?? 정보도 함께보내기
+   1. 몰래 input만들고 value에 정보를 넣음
+   2. name 쓰기
+*/
+app.put('/edit', function(요청, 응답) {
+   db.collection('post').updateOne({ _id : parseInt(요청.body.id) }, { $set : {제목 : 요청.body.title, 날짜 : 요청.body.date} }, function(에러, 결과) {
+      console.log('수정완료')
+      응답.redirect('/list') 
    })
 });
 
