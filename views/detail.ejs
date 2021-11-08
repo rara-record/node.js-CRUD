@@ -21,14 +21,23 @@
         <h4 class="text-center">상세페이지 입니다.</h4>
         <div class="card" style="width: 100%;">
             <div class="card-body">
-            <h5 class="card-title"><%= data.제목 %></h5>
-            <h6 class="card-subtitle mb-2 text-muted"><%= data.날짜 %></h6>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="card-link">수정하기</a>
+                <h5 class="card-title"><%= data.제목 %></h5>
+                <h6 class="card-subtitle mb-2 text-muted"><%= data.날짜 %></h6>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <button class="card-link" data-id="<%= data._id %>" >수정하기</button>
             </div>
         </div>
     </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    // 클릭시 경로
+    $('.card-link').click( e => {
+        e.preventDefault();
+        let 글번호 = e.target.dataset.id;
+        window.location.href = 'http://localhost:8080/edit/'+ 글번호;
+    })
+</script>
 <!-- script -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
 </body>

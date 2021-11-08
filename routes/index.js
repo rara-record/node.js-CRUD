@@ -10,7 +10,7 @@ router.get('/write', (요청, 응답) => {
   응답.render('write.ejs')
 });
 
-// 게시판 전송 
+// 게시물 전송해서 게시판 파일 전송
 router.get('/list', function(요청, 응답) {
   요청.app.db.collection('post').find().toArray(function(에러, 결과 ) { // post db에 저장된 모든 데이터를 꺼내서
     console.log(결과);
@@ -33,7 +33,7 @@ router.get('/edit/:id', function(요청, 응답) {
   })
 });
 
-// 데이터 저장 및 업데이트
+// 게시물 데이터 저장 및 업데이트
 router.post('/add', function (요청, 응답) {
   요청.app.db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과) { // db에서 게시물 갯수 데이터를 꺼낸다
     let 총게시물갯수 = 결과.totalPost // 꺼낸 게시물 갯수 데이터를 변수에 담는다
@@ -43,7 +43,7 @@ router.post('/add', function (요청, 응답) {
 
       요청.app.db.collection('counter').updateOne({name:'게시물갯수'},{ $inc: {totalPost:1} },function(에러, 결과){
       if(에러){return console.log(에러)} // 글번호 업데이트를 위해서, counter db에 게시물 갯수를 업데이트한다
-      응답.send('전송완료');
+      응답.redirect('/write');
       })
     })
   })
@@ -68,19 +68,6 @@ router.delete('/delete', function(요청, 응답) {
   })
 }); 
 
-// 마이페이지 
-router.get('/mypage', 로그인했니, function(요청, 응답) {
-  console.log(요청.user)
-  응답.render('mypage.ejs')
-});
-
-function 로그인했니(요청, 응답, next) {
-  if (요청.user) { // 요청.user가 있는지 검사
-    next()
-  } else {
-    응답.redirect('/login')
-  }
-}
 
 
 module.exports = router;

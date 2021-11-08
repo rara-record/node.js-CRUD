@@ -4,3 +4,14 @@
 body {
     font-family: '맑은고딕';
 }
+
+.list-group-item:hover {
+    background: lavenderblush;
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+    color: lightcoral;
+}

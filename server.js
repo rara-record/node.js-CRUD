@@ -96,16 +96,28 @@ app.get('/mypage', 로그인했니, function (요청, 응답) {
    }
 }
 
-// 검색기능 
-// get요청으로 서버한테 데이터 전달하는법 : query string 꺼내는법
-// 작성하는 법: ?데이터이름=데이터값
+// get요청으로 서버한테 데이터 전달하는법 
+// search index에서 검색하는법
 app.get('/search', (요청, 응답)=>{
-   console.log(요청.query.value)
-   // 요청받은 value값을 db에서 찾아서 보내줌
-   db.collection('post').find({제목 :요청.query.value}).toArray((에러, 결과) => {
+   var 검색조건 = [
+      {
+         $search: {
+            index: 'titleSearch',
+            text: {
+               query: 요청.query.value,
+               path: '제목'  // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
+            }
+         }
+      },
+      { $sort : {_id : -1} }, // 아이디 순으로 정렬하기 (-는 내림차순)
+      
+      // { $project : { 제목 : 1, _id : 0, score : {$meta : "searchScore" } } } 검색 결과에 필터주기
+      // { $limit : 10 } 열개까지 보여줌
+   ] 
+   console.log(요청.query);
+   db.collection('post').aggregate(검색조건).toArray((에러, 결과)=>{
       console.log(결과)
-      응답.render('search.ejs', {posts : 결과});
-   });
+      응답.render('search.ejs', {posts : 결과})
+   })
 })
-
 
