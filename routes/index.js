@@ -26,7 +26,7 @@ router.get('/detail/:id', function(요청, 응답){ // :id => url의 파라미�
   })
 });
 
-// 게시물 수정하기
+// 게시물 수정 페이지
 router.get('/edit/:id', function(요청, 응답) {
   요청.app.db.collection('post').findOne({ _id : parseInt(요청.params.id) }, function(에러, 결과) {
      응답.render('edit.ejs', { post : 결과 }) // 찾은 결과를 edit.ejs로 보내주세용
@@ -49,7 +49,6 @@ router.post('/add', function (요청, 응답) {
   })
 });
 
-
 // 게시판 수정하기
 router.put('/edit', function(요청, 응답) {
   요청.app.db.collection('post').updateOne({ _id : parseInt(요청.body.id) }, { $set : {제목 : 요청.body.title, 날짜 : 요청.body.date} },
@@ -58,8 +57,6 @@ router.put('/edit', function(요청, 응답) {
      응답.redirect('/list') //수정시 게시판으로 이동
   })
 });
-
-
 
 // 게시물 삭제하기
 router.delete('/delete', function(요청, 응답) {
@@ -70,6 +67,20 @@ router.delete('/delete', function(요청, 응답) {
      응답.status(200).send( { message : '성공했습니다.' }); // 응답코드
   })
 }); 
+
+// 마이페이지 
+router.get('/mypage', 로그인했니, function(요청, 응답) {
+  console.log(요청.user)
+  응답.render('mypage.ejs')
+});
+
+function 로그인했니(요청, 응답, next) {
+  if (요청.user) { // 요청.user가 있는지 검사
+    next()
+  } else {
+    응답.redirect('/login')
+  }
+}
 
 
 module.exports = router;

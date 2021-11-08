@@ -13,14 +13,13 @@ app.use(session({secret : '비밀코드', resave : true, saveUninitialized: fals
 app.use(passport.initialize());
 app.use(passport.session()); 
 app.use(express.urlencoded({extended: false})) 
-app.use(express.json()); // <<<<<<<< 추가했어요 ㅠ_ㅠ
+app.use(express.json()); 
 app.use('/public', express.static('public'))
 app.use(methodOverride('_method'))
 app.set('view engine', 'ejs');
 
 // 라우터 분리
 app.use('/', require('./routes/index.js') );
-app.use('/', require('./routes/sign.js') );
 
 // DB접속하기
 let db;
@@ -34,6 +33,17 @@ MongoClient.connect(process.env.DB_URL, {useUnifiedTopology: true, useNewUrlPars
 });
 
 
+// 로그인 페이지로
+app.get('/login', function(요청, 응답){
+   응답.render('login.ejs')
+ });
+ 
+ // router.post('/login', local 방식으로 회원인지 인증해주세요, callback)
+ app.post('/login', passport.authenticate('local', {
+   failureRedirect : '/login'
+ }), function(요청, 응답){
+   응답.redirect('/')
+ });
 
 // passport.authenticate 실행
 passport.use(new LocalStrategy({
@@ -59,6 +69,7 @@ function (입력한아이디, 입력한비번, done) {
    })
 }));
 
+
 // id를 이용해서 세션을 저장시킴 (로그인 성공시 발동)
 passport.serializeUser(function (user, done) {
    done(null, user.id)
@@ -66,7 +77,35 @@ passport.serializeUser(function (user, done) {
 
 // 세션 데이터를 가진 사람을 DB에서 찾음(마이페이지 접속시 발동)
 passport.deserializeUser(function (아이디, done) {
-   done(null, {})
+   db.collection('login').findOne({ id: 아이디 }, function (에러, 결과) {
+     done(null, 결과)
+   })
 }); 
+
+// 마이페이지 
+app.get('/mypage', 로그인했니, function (요청, 응답) {
+   console.log(요청.user);
+   응답.render('mypage.ejs')
+}) 
+ 
+ function 로그인했니(요청, 응답, next) {
+   if (요청.user) { // 요청.user가 있는지 검사
+     next()
+   } else {
+     응답.redirect('/login')
+   }
+}
+
+// 검색기능 
+// get요청으로 서버한테 데이터 전달하는법 : query string 꺼내는법
+// 작성하는 법: ?데이터이름=데이터값
+app.get('/search', (요청, 응답)=>{
+   console.log(요청.query.value)
+   // 요청받은 value값을 db에서 찾아서 보내줌
+   db.collection('post').find({제목 :요청.query.value}).toArray((에러, 결과) => {
+      console.log(결과)
+      응답.render('search.ejs', {posts : 결과});
+   });
+})
 
 
