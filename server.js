@@ -9,17 +9,16 @@ const session = require('express-session');
 const methodOverride = require('method-override')
 require('dotenv').config()
 
+var cors = require('cors')
+app.use(cors());
+app.use(express.urlencoded({extended: false})) 
+app.use(express.json()); 
 app.use(session({secret : '비밀코드', resave : true, saveUninitialized: false}));
 app.use(passport.initialize());
 app.use(passport.session()); 
-app.use(express.urlencoded({extended: false})) 
-app.use(express.json()); 
 app.use('/public', express.static('public'))
 app.use(methodOverride('_method'))
 app.set('view engine', 'ejs');
-
-// 라우터 분리
-app.use('/', require('./routes/index.js') );
 
 // DB접속하기
 let db;
@@ -32,21 +31,62 @@ MongoClient.connect(process.env.DB_URL, {useUnifiedTopology: true, useNewUrlPars
     })
 });
 
+// 홈
+app.get('/', function(요청, 응답) {
+   응답.render('index.ejs')
+ });
+ 
+ // 게시물 작성
+ app.get('/write', (요청, 응답) => {
+   응답.render('write.ejs')
+ });
+ 
+ // 게시물 전송해서 게시판 파일 전송
+ app.get('/list', function(요청, 응답) {
+   db.collection('post').find().toArray(function(에러, 결과 ) { // post db에 저장된 모든 데이터를 꺼내서
+     console.log(결과);
+     응답.render('list.ejs', {posts : 결과}); // 찾은 결과값과, ejs 파일을 전송해준다
+   })
+ });
+ 
+// 게시물 수정 페이지
+ app.get('/edit/:id', function(요청, 응답) {
+   db.collection('post').findOne({ _id : parseInt(요청.params.id) }, function(에러, 결과) {
+      응답.render('edit.ejs', { post : 결과 }) // 찾은 결과를 edit.ejs로 보내주세용
+   })
+ });
+ 
+// 게시판 수정하기
+ app.put('/edit', function(요청, 응답) {
+   db.collection('post').updateOne({ _id : parseInt(요청.body.id) }, { $set : {제목 : 요청.body.title, 날짜 : 요청.body.date} },
+   function(에러, 결과) { // updateOne ( { 어떤 게시물을 수정할지}, {수정값}, 콜백함수)
+      console.log('수정완료')
+      응답.redirect('/list') //수정시 게시판으로 이동
+   })
+});
+
+// 상세페이지 
+app.get('/detail/:id', function(요청, 응답){ // :id => url의 파라미터
+   console.log(요청.body)
+   db.collection('post').findOne({ _id : parseInt(요청.params.id) }, function(에러, 결과){ // _id가 params.id인 데이터 찾아줭
+      응답.render('detail.ejs', { data : 결과 }) // 찾은 결과와, ejs파일 전송
+   })
+});
 
 // 로그인 페이지로
 app.get('/login', function(요청, 응답){
    응답.render('login.ejs')
- });
+});
  
- // router.post('/login', local 방식으로 회원인지 인증해주세요, callback)
+// 로그인 인증
+// app.post('/login', local 방식으로 회원인지 인증해주세요, callback)
  app.post('/login', passport.authenticate('local', {
+   successRedirect: '/',
    failureRedirect : '/login'
- }), function(요청, 응답){
-   응답.redirect('/')
- });
+ }));
 
-// passport.authenticate 실행
-passport.use(new LocalStrategy({
+// 로그인 passport.authenticate 실행
+passport.use('local', new LocalStrategy({
    usernameField: 'id',
    passwordField: 'pw',
    session: true,
@@ -69,7 +109,6 @@ function (입력한아이디, 입력한비번, done) {
    })
 }));
 
-
 // id를 이용해서 세션을 저장시킴 (로그인 성공시 발동)
 passport.serializeUser(function (user, done) {
    done(null, user.id)
@@ -82,14 +121,55 @@ passport.deserializeUser(function (아이디, done) {
    })
 }); 
 
+ // 게시물 데이터 저장 및 업데이트
+ app.post('/add', function (요청, 응답) {
+   db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과) { // db에서 게시물 갯수 데이터를 꺼낸다
+      console.log(결과.totalPost);
+
+     let 총게시물갯수 = 결과.totalPost // 꺼낸 게시물 갯수 데이터를 변수에 담는다
+     let 저장할거 = { 
+       _id : 총게시물갯수 + 1, 
+       작성자 : 요청.user.id,
+       제목 : 요청.body.title, 
+       날짜 : 요청.body.date, 
+     }
+ 
+     db.collection('post').insertOne(저장할거, function (에러, 결과) { // post db에 총 게시물 갯수 +1, 요청받은 데이터들을 db에 저장한다
+ 
+       db.collection('counter').updateOne({name:'게시물갯수'},{ $inc: {totalPost:1} },function(에러, 결과){
+       if(에러){return console.log(에러)} // 글번호 업데이트를 위해서, counter db에 게시물 갯수를 업데이트한다
+       응답.redirect('/write');
+       })
+     })
+   })
+});
+
+// 게시물 삭제하기
+app.delete('/delete', function(요청, 응답) {
+   console.log(요청.body); //  ajax에서 data : { _id : ?? } => 요청.body 로 받아옴
+   요청.body._id = parseInt(요청.body._id); // 요청받은 데이터는 꼭 정수로 변환
+
+
+   // 둘다 만족하는 데이터 지워줌
+   let 삭제할데이터 = { _id : 요청.body._id, 작성자 : 요청.user.id }
+
+   // 요청.body에 담겨온 데이터 (data : { _id : ?? }) 삭제
+   db.collection('post').deleteOne(삭제할데이터, function(에러, 결과) { 
+      console.log('삭제완료');
+      if (결과) {console.log(결과)}
+      응답.status(200).send( { message : '성공했습니다.' }); // 응답코드
+   })
+}); 
+
 // 마이페이지 
 app.get('/mypage', 로그인했니, function (요청, 응답) {
    console.log(요청.user);
    응답.render('mypage.ejs')
-}) 
+}); 
  
  function 로그인했니(요청, 응답, next) {
    if (요청.user) { // 요청.user가 있는지 검사
+      console.log(요청.user)
      next()
    } else {
      응답.redirect('/login')
@@ -119,5 +199,12 @@ app.get('/search', (요청, 응답)=>{
       console.log(결과)
       응답.render('search.ejs', {posts : 결과})
    })
-})
+});
 
+// 회원가입
+app.post('/register', (요청, 응답) => {
+   db.collection('login').insertOne( { id : 요청.body.id, pw : 요청.body.pw }, 
+      function(에러, 결과) {
+         응답.redirect('/');
+   }) 
+});
