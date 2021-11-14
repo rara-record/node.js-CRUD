@@ -210,10 +210,6 @@ app.post('/register', (요청, 응답) => {
    }) 
 });
 
-// 이미지 업로드/서버 만들기
-app.get('/upload', (요청, 응답) => {
-   응답.render('upload.ejs');
-});
 
 // multer를 이용한 이미지 하드에 저장하기
 let multer = require('multer');
@@ -223,9 +219,16 @@ var storage = multer.diskStorage({
     cb(null, './public/image')
   },
   filename : function(req, file, cb){
-    cb(null, file.originalname )
-  }
-
+    cb(null, file.originalname)
+  },
+  // 파일형식 (확장자) 거르기
+  fileFilter: function (req, file, callback) {
+   var ext = path.extname(file.originalname);
+   if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+       return callback(new Error('PNG, JPG만 업로드하세요'))
+   }
+   callback(null, true)
+   }
 });
 
 var upload = multer({storage : storage});
@@ -233,4 +236,14 @@ var upload = multer({storage : storage});
 // 이미지 업로드시 multer 동작시키기
 app.post('/upload', upload.single('테스트이미지네임'), (요청, 응답) => {
    응답.send('이미지 업로드 완료');
+});
+
+// 이미지 업로드/서버 만들기
+app.get('/upload', (요청, 응답) => {
+   응답.render('upload.ejs');
+});
+
+// 업로드한 이미지 보여주기
+app.get('/image/:imageName', (요청, 응답) => {
+   응답.sendFile( __dirname + '/public/image/'  + 요청.params.imageName )
 });
