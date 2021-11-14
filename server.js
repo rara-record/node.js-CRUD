@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const LocalStrategy = require('passport-local').Strategy;
 const passport = require('passport');
 const session = require('express-session');
-const methodOverride = require('method-override')
+const methodOverride = require('method-override');
 require('dotenv').config()
 
 
@@ -231,9 +231,9 @@ var storage = multer.diskStorage({
    }
 });
 
-var upload = multer({storage : storage});
 
 // 이미지 업로드시 multer 동작시키기
+let upload = multer({storage : storage});
 app.post('/upload', upload.single('테스트이미지네임'), (요청, 응답) => {
    응답.send('이미지 업로드 완료');
 });
@@ -247,3 +247,17 @@ app.get('/upload', (요청, 응답) => {
 app.get('/image/:imageName', (요청, 응답) => {
    응답.sendFile( __dirname + '/public/image/'  + 요청.params.imageName )
 });
+
+// chatroom 디비에 저장 (로그인필요)
+app.post('/chatroom', function(요청, 응답){
+
+   var 저장할거 = {
+     title : '무슨무슨채팅방',
+     member : [요청.body.당한사람id, 요청.user._id],
+     date : new Date()
+   }
+ 
+   db.collection('chatroom').insertOne(저장할거).then(function(결과){
+     응답.send('저장완료')
+   });
+ });
