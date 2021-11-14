@@ -9,6 +9,7 @@ const session = require('express-session');
 const methodOverride = require('method-override')
 require('dotenv').config()
 
+
 var cors = require('cors')
 app.use(cors());
 app.use(express.urlencoded({extended: false})) 
@@ -207,4 +208,29 @@ app.post('/register', (요청, 응답) => {
       function(에러, 결과) {
          응답.redirect('/');
    }) 
+});
+
+// 이미지 업로드/서버 만들기
+app.get('/upload', (요청, 응답) => {
+   응답.render('upload.ejs');
+});
+
+// multer를 이용한 이미지 하드에 저장하기
+let multer = require('multer');
+var storage = multer.diskStorage({
+
+  destination : function(req, file, cb){
+    cb(null, './public/image')
+  },
+  filename : function(req, file, cb){
+    cb(null, file.originalname )
+  }
+
+});
+
+var upload = multer({storage : storage});
+
+// 이미지 업로드시 multer 동작시키기
+app.post('/upload', upload.single('테스트이미지네임'), (요청, 응답) => {
+   응답.send('이미지 업로드 완료');
 });
