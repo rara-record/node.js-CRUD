@@ -1,6 +1,9 @@
 // 서버를 띄우기 위한 기본 셋팅 - 서버 오픈 문법 (express 라이브러리) 
 const express = require('express');
 const app = express();
+const http = require('http').createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(http);
 const MongoClient = require('mongodb').MongoClient;
 const bodyParser = require('body-parser');
 const LocalStrategy = require('passport-local').Strategy;
@@ -10,8 +13,6 @@ const methodOverride = require('method-override');
 require('dotenv').config()
 
 
-var cors = require('cors')
-app.use(cors());
 app.use(express.urlencoded({extended: false})) 
 app.use(express.json()); 
 app.use(session({secret : '비밀코드', resave : true, saveUninitialized: false}));
@@ -27,7 +28,8 @@ MongoClient.connect(process.env.DB_URL, {useUnifiedTopology: true, useNewUrlPars
    if (에러) return console.log(에러)
 	db = client.db('todoapp'); // todoapp이라는 database에 연결좀여
    app.db = db;
-   app.listen(process.env.PORT, function() {
+
+   http.listen(process.env.PORT, function() {
       console.log('listening on 8080')
     })
 });
@@ -292,10 +294,25 @@ app.get('/message/:parentid', 로그인했니, function(요청, 응답){
      "Content-Type": "text/event-stream",
      "Cache-Control": "no-cache",
    });
- 
+   
    db.collection('messages').find({parent : 요청.params.parentid }).toArray().then((결과) => {
       응답.write(`event: test\n`);
       // 응답.write('data: '+ JSON.stringify(결과) +'\n\n');
       응답.write(`data:${JSON.stringify(결과)}\n\n`);
    })
  });
+
+// 웹소켓 페이지
+app.get('/socket', (요청, 응답) => {
+   응답.render('socket.ejs')
+});
+
+// 웹소켓에 접속하면 실행할 것 (수신)
+io.on('connection', (socket) => {
+   console.log('유저접속됨')
+
+   // user-send이름으로 메세지 보내면 실행할것
+   socket.on('user-send', (data) => { 
+      console.log(data);
+   })
+});
