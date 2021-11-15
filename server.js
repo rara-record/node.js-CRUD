@@ -309,10 +309,21 @@ app.get('/socket', (요청, 응답) => {
 
 // 웹소켓에 접속하면 실행할 것 
 io.on('connection', (socket) => {
-   // console.log(socket.id) 
+   console.log('유저접속됨');
+
+   // room1-send 메세지 받으면 실행할것
+   socket.on('room1-send', (data) => { // 메세지 수신
+      io.to('room1').emit('broadcast', data)
+   });
    
-   // user-send이름으로 메세지 보내면 실행할것
+   // joinroom이름으로 메세지 받으면 실행할것
+   socket.on('joinroom', (data) => { // 메세지 수신
+      socket.join('room1'); // 채팅방 생성+입장
+      console.log('룸으로 들어옴')
+   });
+   
+   // user-send이름으로 메세지 받으면 실행할것
    socket.on('user-send', (data) => { // 메세지 수신
-      io.emit('broadcast', data) // 서버-> 유저 메세지전송 io.emit()
-   })
+      io.emit('broadcast', data) // 서버-> 유저 메세지전송 io.emit
+   });
 });

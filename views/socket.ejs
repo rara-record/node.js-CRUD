@@ -18,12 +18,25 @@
     <div id="content"></div>
     <input type="text" id="input1">
     <button id="send">서버에 메세지 보내기</button>
+    <button id="room1">채팅방1 입장</button>
+    <button id="room1-send">채팅방1에서 메세지보내기</button>
 
 <!-- script -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
 <script>
     var socket = io(); // 유저가 websoket에 접속하는법
+
+    // 채팅방 입장한 사람들만 채팅
+    $('#room1-send').click(() => {
+        socket.emit('room1-send', $('#input1').val() )
+    });
+
+    // socket으로 GET/POST 요청 대체 가능
+    $('#room1').click(() => {
+        socket.emit('joinroom', '채팅방입장시켜줘')
+    });
+
     $('#send').click(()=> {
         // 유저 -> 서버 메세지 전송 socket.emit(작명,메세지)
         socket.emit('user-send', $('#input1').val() ) 
