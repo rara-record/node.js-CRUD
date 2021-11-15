@@ -283,3 +283,19 @@ app.post('/message', 로그인했니, function(요청, 응답){
       응답.send('DB저장성공')
    })
 }); 
+
+// 채팅방 누르면 메세지 보내주기 : 서버와의 실시간 소통(SSE) 
+app.get('/message/:parentid', 로그인했니, function(요청, 응답){
+
+   응답.writeHead(200, {
+     "Connection": "keep-alive",
+     "Content-Type": "text/event-stream",
+     "Cache-Control": "no-cache",
+   });
+ 
+   db.collection('messages').find({parent : 요청.params.parentid }).toArray().then((결과) => {
+      응답.write(`event: test\n`);
+      // 응답.write('data: '+ JSON.stringify(결과) +'\n\n');
+      응답.write(`data:${JSON.stringify(결과)}\n\n`);
+   })
+ });
