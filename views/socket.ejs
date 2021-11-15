@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- Style CSS -->
+    <link href="/public/main.css" rel="stylesheet">
+
+    <title>socket</title>
+</head>
+<body>
+    <!-- main -->
+    <div>채팅방</div>
+    <button id="send">서버에 메세지 보내기</button>
+
+<!-- script -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+<script>
+    var socket = io(); // 유저가 websoket에 접속하는법
+    $('#send').click(()=> {
+        socket.emit('user-send', '안녕하세요') // 서버에게 웹소켓으로 실시간 메세지보내는법 socket.emit(작명,메세지)
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+</html>
