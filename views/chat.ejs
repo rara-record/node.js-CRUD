@@ -56,9 +56,17 @@
 
 <script>
   var 지금누른채팅방id;
-  $('.list-group-item').click(function() {
+  var eventSource;
+
+  $('.list-group-item').click(function() { // 채팅방 하나 누르면
     지금누른채팅방id = this.dataset.id;
-  })
+
+    eventSource = new EventSource('/message/' + 지금누른채팅방id); // 실시간 소통채널 입장
+    eventSource.addEventListener('test', e => {
+      console.log(JSON.parse(e.data)); // 서버가 데이터를 보내주면 출력
+    })
+  });
+
   $('#send').click(function() {
     var 채팅내용 = $('#chat-input').val();
     var 보낼거 = {
