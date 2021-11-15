@@ -25,7 +25,7 @@
         <ul class="list-group chat-list">
 
           <% for (let i = 0; i < data.length; i++) { %>
-          <li class="list-group-item" data-id="">
+          <li class="list-group-item" data-id="<%= data[i]._id %>">
             <h6><%= data[i].title %></h6>
             <h6 class="text-small"><%= data[i].member[0] %></h6>
           </li>
@@ -53,6 +53,23 @@
 
 <!-- script -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<script>
+  var 지금누른채팅방id;
+  $('.list-group-item').click(function() {
+    지금누른채팅방id = this.dataset.id;
+  })
+  $('#send').click(function() {
+    var 채팅내용 = $('#chat-input').val();
+    var 보낼거 = {
+      parent : 지금누른채팅방id,
+      content : 채팅내용, 
+    }
+    $.post('/message', 보낼거).then(() => {
+      console.log('전송 성공')
+    })
+  })
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
 </body>
 </html>
