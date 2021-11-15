@@ -307,12 +307,12 @@ app.get('/socket', (요청, 응답) => {
    응답.render('socket.ejs')
 });
 
-// 웹소켓에 접속하면 실행할 것 (수신)
+// 웹소켓에 접속하면 실행할 것 
 io.on('connection', (socket) => {
-   console.log('유저접속됨')
-
+   // console.log(socket.id) 
+   
    // user-send이름으로 메세지 보내면 실행할것
-   socket.on('user-send', (data) => { 
-      console.log(data);
+   socket.on('user-send', (data) => { // 메세지 수신
+      io.emit('broadcast', data) // 서버-> 유저 메세지전송 io.emit()
    })
 });
