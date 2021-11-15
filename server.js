@@ -210,7 +210,6 @@ app.post('/register', (요청, 응답) => {
    }) 
 });
 
-
 // multer를 이용한 이미지 하드에 저장하기
 let multer = require('multer');
 var storage = multer.diskStorage({
@@ -231,7 +230,6 @@ var storage = multer.diskStorage({
    }
 });
 
-
 // 이미지 업로드시 multer 동작시키기
 let upload = multer({storage : storage});
 app.post('/upload', upload.single('테스트이미지네임'), (요청, 응답) => {
@@ -249,15 +247,25 @@ app.get('/image/:imageName', (요청, 응답) => {
 });
 
 // chatroom 디비에 저장 (로그인필요)
-app.post('/chatroom', function(요청, 응답){
+app.post('/chatroom', 로그인했니, (요청, 응답) => {
 
-   var 저장할거 = {
-     title : '무슨무슨채팅방',
-     member : [요청.body.당한사람id, 요청.user._id],
-     date : new Date()
+   const 저장할거 = {
+      title : '무슨무슨채팅방',
+      member : [요청.body.당한사람id, 요청.user._id], // 현재로그인한유저
+      date : new Date()
    }
- 
+
    db.collection('chatroom').insertOne(저장할거).then(function(결과){
-     응답.send('저장완료')
+      응답.send('저장완료')
    });
- });
+});
+
+// 내가 속한 채팅방 게시물도 보여주기
+app.get('/chat', 로그인했니, function(요청, 응답){ 
+
+   db.collection('chatroom').find({ member : 요청.user._id }).toArray().then((결과)=>{
+     console.log(결과);
+     응답.render('chat.ejs', {data : 결과})
+   })
+ 
+ }); 
